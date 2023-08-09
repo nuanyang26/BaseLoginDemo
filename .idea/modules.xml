@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/bili-project.iml" filepath="$PROJECT_DIR$/bili-project.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bili-project-backend/bili-project-backend.iml" filepath="$PROJECT_DIR$/bili-project-backend/bili-project-backend.iml" />
+      <module fileurl="file://$PROJECT_DIR$/bili-project-frontend.iml" filepath="$PROJECT_DIR$/bili-project-frontend.iml" />
+    </modules>
+  </component>
+</project>
