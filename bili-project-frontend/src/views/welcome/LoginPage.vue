@@ -4,7 +4,7 @@
 
 <template>
   <div>
-    <router-view></router-view>
+    我是登录界面
   </div>
 </template>
 
