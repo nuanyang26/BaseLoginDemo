@@ -14,10 +14,13 @@ const formRef = ref()
 
 const rule = {
   username: [
-    {required: true, message: '请输入用户名'}
+    {required: true, message: '请输入用户名'},
+    {min: 1, max: 10, message: '用户名不多于10', trigger: 'blur'}
   ],
   password: [
-    {required: true, message: '请输入密码'}
+    {required: true, message: '请输入密码'},
+    {max: 20, message: '密码不多于20', trigger: 'blur'},
+    {min: 6, message: '密码不多于6', trigger: 'blur'}
   ]
 }
 
@@ -27,7 +30,7 @@ function userLogin() {
       login(form.username, form.password, form.remember,
           () => {
             router.push('/index')
-      })
+          })
     }
   })
 }
@@ -44,7 +47,7 @@ function userLogin() {
     <div style="margin-top: 50px">
       <el-form ref="formRef" :model="form" :rules="rule">
         <el-form-item prop="username">
-          <el-input v-model="form.username" maxlength="10" placeholder="用户名/邮箱" type="text">
+          <el-input v-model="form.username" placeholder="用户名/邮箱" type="text">
             <template #prefix>
               <el-icon>
                 <User/>
@@ -53,7 +56,7 @@ function userLogin() {
           </el-input>
         </el-form-item>
         <el-form-item prop="password">
-          <el-input v-model="form.password" maxlength="20" placeholder="密码" type="password">
+          <el-input v-model="form.password" placeholder="密码" type="password">
             <template #prefix>
               <el-icon>
                 <Lock/>
@@ -75,13 +78,13 @@ function userLogin() {
     </div>
 
     <div style="margin-top: 40px">
-      <el-button plain style="width: 270px;" type="success" @click="userLogin">立即登录</el-button>
+      <el-button plain style="width: 80%;" type="success" @click="userLogin">立即登录</el-button>
     </div>
     <el-divider>
       <span style="font-size: 13px;color: gray">没有账号</span>
     </el-divider>
     <div>
-      <el-button plain style="width: 270px" type="warning">立即注册</el-button>
+      <el-button plain style="width: 80%" type="warning" @click="router.push('/register')">立即注册</el-button>
     </div>
 
   </div>

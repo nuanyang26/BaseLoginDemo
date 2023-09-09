@@ -16,7 +16,11 @@
     </div>
 
     <div class="right-card">
-      <router-view></router-view>
+      <router-view v-slot="{ Component }">
+        <transition mode="out-in" name="el-fade-in-linear">
+          <component :is="Component"/>
+        </transition>
+      </router-view>
     </div>
   </div>
 </template>
