@@ -1,7 +1,15 @@
 <script setup>
-import {reactive} from "vue";
-import {Lock, Message, User} from "@element-plus/icons-vue";
+import {computed, reactive, ref} from "vue";
+import {EditPen, Lock, Message, User} from "@element-plus/icons-vue";
+import {ElMessage} from "element-plus";
+import {get, post} from "@/net";
 import router from "@/router";
+
+const coldTime = ref(0)
+const isEmailValid = computed(() => /^[\w.-]+@[\w.-]+\.\w+$/.test(form.email))
+
+const formRef = ref()
+
 
 const form = reactive({
   username: '',
@@ -11,10 +19,9 @@ const form = reactive({
   code: ''
 })
 
-var validatePassWord_repeat = (rule, value, callback) => {
+const validatePassWord_repeat = (rule, value, callback) => {
   if (value === '') {
     callback(new Error('请再次输入密码'))
-    // password 是表单上绑定的字段
   } else if (value !== form.password) {
     callback(new Error('两次输入密码不一致!'))
   } else {
@@ -23,17 +30,19 @@ var validatePassWord_repeat = (rule, value, callback) => {
 }
 
 const validateUsername = (rule, value, callback) => {
-  if (!/^[a-zA-Z0-9\u4e00-\u9fa5]+$/.test(value)) {
+  if (value === '') {
+    callback(new Error('请输入用户名'))
+  } else if (!/^[a-zA-Z0-9\u4e00-\u9fa5]+$/.test(value)) {
     callback(new Error('用户名不能包含特殊字符，只能是中/英文'))
+  } else {
+    callback()
   }
 }
 
 const rule = {
   username: [
-    {required: true, message: '请输入用户名'},
+    {required: true, validator: validateUsername, trigger: ['blur', 'change']},
     {min: 1, max: 10, message: '用户名长度在1-10个字符之间', trigger: ['blur', 'change']},
-    {validator: validateUsername, trigger: ['blur', 'change']}
-
   ],
   password: [
     {required: true, message: '请输入密码'},
@@ -52,6 +61,34 @@ const rule = {
   ]
 }
 
+function askCode() {
+  if (isEmailValid) {
+    coldTime.value = 60;
+    get(`/api/auth/ask-code?email=${form.email}&type=register`, () => {
+      ElMessage.success(`验证码已发送到邮箱：${form.email}，请注意查收`)
+      setInterval(() => coldTime.value--, 1000)
+    }, (message) => {
+      ElMessage.warning(message)
+      coldTime.value = 0
+    })
+  } else {
+    ElMessage.warning('请输入正确的电子邮件')
+  }
+}
+
+function register() {
+  formRef.value.validate((valid) => {
+    if (valid) {
+      post('/api/auth/register', {...form}, () => {
+        ElMessage.success('注册成功，欢迎加入我们')
+        router.push('/')
+      })
+    } else {
+      ElMessage.warning('请完整填写表单内容')
+    }
+  })
+}
+
 </script>
 
 <template>
@@ -61,7 +98,7 @@ const rule = {
       <div style="font-size: 14px; color: gray">欢迎注册我们的学习平台，请在下方填写相关信息</div>
     </div>
     <div style="margin-top: 50px">
-      <el-form :model="form" :rules="rule">
+      <el-form ref="formRef" :model="form" :rules="rule">
         <el-form-item prop="username">
           <el-input v-model="form.username" placeholder="用户名/邮箱账号" type="text">
             <template #prefix>
@@ -90,7 +127,7 @@ const rule = {
           </el-input>
         </el-form-item>
         <el-form-item prop="email">
-          <el-input v-model="form.email" placeholder="电子邮件地址" type="text">
+          <el-input v-model="form.email" placeholder="电子邮件地址" type="email">
             <template #prefix>
               <el-icon>
                 <Message/>
@@ -101,10 +138,18 @@ const rule = {
         <el-form-item prop="code">
           <el-row :gutter="10" style="width: 100%;">
             <el-col :span="17">
-              <el-input v-model="form.code" placeholder="请输入验证码" type="text"></el-input>
+              <el-input v-model="form.code" placeholder="请输入验证码" type="text">
+                <template #prefix>
+                  <el-icon>
+                    <EditPen/>
+                  </el-icon>
+                </template>
+              </el-input>
             </el-col>
             <el-col :span="5">
-              <el-button plain type="success">获取验证码</el-button>
+              <el-button :disabled="!isEmailValid || coldTime > 0" plain type="success" @click="askCode">
+                {{ coldTime > 0 ? `请稍后${coldTime}秒` : '获取验证码' }}
+              </el-button>
             </el-col>
           </el-row>
         </el-form-item>
@@ -112,7 +157,7 @@ const rule = {
       </el-form>
     </div>
     <div style="margin-top: 50px">
-      <el-button plain style="width: 80%" type="warning">立即注册</el-button>
+      <el-button plain style="width: 80%" type="warning" @click="register">立即注册</el-button>
     </div>
     <div style="margin-top: 20px">
       <span style="font-size: 14px; line-height: 15px; color:grey;">已有账号？</span>
